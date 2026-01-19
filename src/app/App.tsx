@@ -1,0 +1,119 @@
+import React, { useState } from 'react';
+import { LanguageProvider } from '@/app/contexts/LanguageContext';
+import { AuthProvider, useAuth } from '@/app/contexts/AuthContext';
+import Header from '@/app/components/Header';
+import HomePage from '@/app/pages/HomePage';
+import SportsPage from '@/app/pages/SportsPage';
+import ServicesPage from '@/app/pages/ServicesPage';
+import TradesPage from '@/app/pages/TradesPage';
+import ContactPage from '@/app/pages/ContactPage';
+import SupportsPage from '@/app/pages/SupportsPage';
+import LoginPage from '@/app/pages/LoginPage';
+import RegisterPage from '@/app/pages/RegisterPage';
+import SearchPage from '@/app/pages/SearchPage';
+import AdminDashboard from '@/app/pages/dashboards/AdminDashboard';
+import StudentDashboard from '@/app/pages/dashboards/StudentDashboard';
+import ParentDashboard from '@/app/pages/dashboards/ParentDashboard';
+import DirectorStudyDashboard from '@/app/pages/dashboards/DirectorStudyDashboard';
+import DirectorDisciplineDashboard from '@/app/pages/dashboards/DirectorDisciplineDashboard';
+import HeadMasterDashboard from '@/app/pages/dashboards/HeadMasterDashboard';
+import TeacherDashboard from '@/app/pages/dashboards/TeacherDashboard';
+import AccountantDashboard from '@/app/pages/dashboards/AccountantDashboard';
+import StockManagerDashboard from '@/app/pages/dashboards/StockManagerDashboard';
+import Footer from '@/app/components/Footer';
+
+const AppContent: React.FC = () => {
+  const [currentPage, setCurrentPage] = useState('home');
+  const { user, logout } = useAuth();
+
+  const handleNavigate = (page: string) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const renderDashboard = () => {
+    if (!user) return null;
+
+    switch (user.role) {
+      case 'admin':
+        return <AdminDashboard onNavigate={handleNavigate} onLogout={logout} />;
+      case 'student':
+        return <StudentDashboard onNavigate={handleNavigate} onLogout={logout} />;
+      case 'parent':
+        return <ParentDashboard onNavigate={handleNavigate} onLogout={logout} />;
+      case 'director_of_study':
+        return <DirectorStudyDashboard onNavigate={handleNavigate} onLogout={logout} />;
+      case 'director_of_discipline':
+        return <DirectorDisciplineDashboard onNavigate={handleNavigate} onLogout={logout} />;
+      case 'head_master':
+        return <HeadMasterDashboard onNavigate={handleNavigate} onLogout={logout} />;
+      case 'teacher':
+        return <TeacherDashboard onNavigate={handleNavigate} onLogout={logout} />;
+      case 'accountant':
+        return <AccountantDashboard onNavigate={handleNavigate} onLogout={logout} />;
+      case 'stock_manager':
+        return <StockManagerDashboard onNavigate={handleNavigate} onLogout={logout} />;
+      default:
+        return null;
+    }
+  };
+
+  const renderPage = () => {
+    // If user is logged in, show their dashboard
+    if (user && !['home', 'sports', 'services', 'trades', 'contactUs', 'supports'].includes(currentPage)) {
+      return renderDashboard();
+    }
+
+    switch (currentPage) {
+      case 'home':
+        return <HomePage onNavigate={handleNavigate} />;
+      case 'sports':
+        return <SportsPage />;
+      case 'services':
+        return <ServicesPage />;
+      case 'trades':
+        return <TradesPage />;
+      case 'contactUs':
+        return <ContactPage />;
+      case 'supports':
+        return <SupportsPage />;
+      case 'login':
+        return <LoginPage onNavigate={handleNavigate} />;
+      case 'register':
+        return <RegisterPage onNavigate={handleNavigate} />;
+      case 'search':
+        return <SearchPage onNavigate={handleNavigate} />;
+      default:
+        if (user) {
+          return renderDashboard();
+        }
+        return <HomePage onNavigate={handleNavigate} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <Header
+        currentPage={currentPage}
+        onNavigate={handleNavigate}
+        onSearch={() => handleNavigate('search')}
+      />
+      <main className="pt-20">
+        {renderPage()}
+      </main>
+      {!user && <Footer onNavigate={handleNavigate} />}
+    </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <LanguageProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </LanguageProvider>
+  );
+};
+
+export default App;
