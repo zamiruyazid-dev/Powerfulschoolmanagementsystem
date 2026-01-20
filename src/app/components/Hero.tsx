@@ -1,168 +1,189 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { ImageWithFallback } from '@/app/components/figma/ImageWithFallback';
+import { Button } from '@/app/components/ui/button';
+import { Badge } from '@/app/components/ui/badge';
 
 const slides = [
   {
-    image: 'https://images.unsplash.com/photo-1758270704524-596810e891b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHVkZW50cyUyMGNsYXNzcm9vbSUyMGxlYXJuaW5nfGVufDF8fHx8MTc2ODc2NTA2NXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    titleKey: 'heroTitle',
-    subtitleKey: 'heroSubtitle',
-    text: 'EMPOWERING FUTURE SKILLS',
+    image: 'https://images.unsplash.com/photo-1758270704524-596810e891b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHVkZW50cyUyMGNsYXNzcm9vbSUyMGxlYXJuaW5nfGVufDF8fHx8MTc2ODc2NTA2NXww&ixlib=rb-4.1.0&q=80&w=1080',
+    title: 'EMPOWERING FUTURE SKILLS',
+    subtitle: 'Building Tomorrow\'s Professionals Today',
+    badge: 'TVET Excellence',
   },
   {
-    image: 'https://images.unsplash.com/photo-1531498860502-7c67cf02f657?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzb2Z0d2FyZSUyMGRldmVsb3BtZW50JTIwY29kaW5nfGVufDF8fHx8MTc2ODcxODI3MXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    titleKey: 'softwareDevelopment',
-    subtitleKey: 'sod',
-    text: 'DÉVELOPPEMENT LOGICIEL (SOD)',
+    image: 'https://images.unsplash.com/photo-1531498860502-7c67cf02f657?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzb2Z0d2FyZSUyMGRldmVsb3BtZW50JTIwY29kaW5nfGVufDF8fHx8MTc2ODcxODI3MXww&ixlib=rb-4.1.0&q=80&w=1080',
+    title: 'SOFTWARE DEVELOPMENT',
+    subtitle: 'Master Coding & Technology',
+    badge: 'SOD Program',
   },
   {
-    image: 'https://images.unsplash.com/photo-1672072830247-85ac23671e96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25zdHJ1Y3Rpb24lMjBidWlsZGluZyUyMHNpdGV8ZW58MXx8fHwxNzY4NzMwNzQ0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    titleKey: 'buildingConstruction',
-    subtitleKey: 'bdc',
-    text: 'CONSTRUCTION DE BÂTIMENTS (BDC)',
+    image: 'https://images.unsplash.com/photo-1672072830247-85ac23671e96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25zdHJ1Y3Rpb24lMjBidWlsZGluZyUyMHNpdGV8ZW58MXx8fHwxNzY4NzMwNzQ0fDA',
+    title: 'BUILDING CONSTRUCTION',
+    subtitle: 'Create Tomorrow\'s Infrastructure',
+    badge: 'BDC Program',
   },
   {
-    image: 'https://images.unsplash.com/photo-1636761358757-0a616eb9e17e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhdXRvbW9iaWxlJTIwbWVjaGFuaWMlMjB3b3Jrc2hvcHxlbnwxfHx8fDE3Njg4MDYyMTl8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    titleKey: 'automobileTechnology',
-    subtitleKey: 'automobileTechnology',
-    text: 'TEKNOLOJIA YA MAGARI',
+    image: 'https://images.unsplash.com/photo-1636761358757-0a616eb9e17e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhdXRvbW9iaWxlJTIwbWVjaGFuaWMlMjB3b3Jrc2hvcHxlbnwxfHx8fDE3Njg4MDYyMTl8MA',
+    title: 'AUTOMOBILE TECHNOLOGY',
+    subtitle: 'Drive Your Future Forward',
+    badge: 'AUT Program',
   },
 ];
 
 const Hero: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
   const { t } = useLanguage();
-  const [displayedText, setDisplayedText] = useState('');
-  const [isTyping, setIsTyping] = useState(true);
 
-  const currentText = slides[currentSlide].text;
-
-  // Typing animation effect
   useEffect(() => {
-    setDisplayedText('');
-    setIsTyping(true);
-    let index = 0;
-
-    const typingInterval = setInterval(() => {
-      if (index < currentText.length) {
-        setDisplayedText((prev) => prev + currentText[index]);
-        index++;
-      } else {
-        setIsTyping(false);
-        clearInterval(typingInterval);
-      }
-    }, 80);
-
-    return () => clearInterval(typingInterval);
-  }, [currentSlide, currentText]);
-
-  // Auto-advance slides
-  useEffect(() => {
+    if (!isPlaying) return;
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5000);
-
     return () => clearInterval(interval);
-  }, []);
+  }, [isPlaying]);
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  };
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
   return (
-    <div className="relative h-[600px] overflow-hidden">
+    <div className="relative h-[600px] overflow-hidden bg-gray-900">
+      {/* Background Slides */}
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSlide}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.7 }}
           className="absolute inset-0"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-10" />
           <ImageWithFallback
             src={slides[currentSlide].image}
-            alt={slides[currentSlide].text}
+            alt={slides[currentSlide].title}
             className="w-full h-full object-cover"
           />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
         </motion.div>
       </AnimatePresence>
 
       {/* Content */}
-      <div className="relative z-20 h-full flex items-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
-            <motion.h1
-              key={currentSlide + '-title'}
+      <div className="relative z-10 h-full flex items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            {/* Text Content */}
+            <motion.div
+              key={currentSlide + '-content'}
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-5xl md:text-7xl font-black text-white mb-4"
             >
-              {displayedText}
-              {isTyping && <span className="animate-pulse">|</span>}
-            </motion.h1>
-            <motion.p
-              key={currentSlide + '-subtitle'}
-              initial={{ x: -100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="text-xl md:text-2xl text-white/90 mb-8"
-            >
-              {t(slides[currentSlide].subtitleKey)}
-            </motion.p>
+              <Badge className="mb-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1">
+                {slides[currentSlide].badge}
+              </Badge>
+              <h1 className="text-4xl md:text-6xl font-black text-white mb-4 leading-tight">
+                {slides[currentSlide].title}
+              </h1>
+              <p className="text-xl md:text-2xl text-gray-200 mb-8">
+                {slides[currentSlide].subtitle}
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8">
+                  {t('getStarted')}
+                </Button>
+                <Button size="lg" variant="outline" className="rounded-full px-8 bg-white/10 backdrop-blur-sm text-white border-white hover:bg-white/20">
+                  {t('learnMore')}
+                </Button>
+              </div>
+            </motion.div>
+
+            {/* Slide Previews */}
             <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.6 }}
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="hidden lg:grid grid-cols-2 gap-4"
             >
-              <button className="px-8 py-3 bg-gradient-to-r from-[#ADFF2F] to-teal-500 text-gray-900 font-bold rounded-full hover:shadow-2xl transform hover:scale-105 transition-all">
-                {t('getStarted')}
-              </button>
+              {slides.map((slide, index) => (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`relative h-32 rounded-xl overflow-hidden cursor-pointer ${
+                    currentSlide === index ? 'ring-4 ring-blue-500' : ''
+                  }`}
+                >
+                  <ImageWithFallback
+                    src={slide.image}
+                    alt={slide.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className={`absolute inset-0 bg-black transition-opacity ${
+                    currentSlide === index ? 'bg-opacity-30' : 'bg-opacity-60'
+                  }`} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <p className="text-white font-bold text-center px-2 text-sm">
+                      {slide.badge}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
           </div>
         </div>
       </div>
 
-      {/* Navigation Arrows */}
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-all"
-      >
-        <ChevronLeft className="w-6 h-6 text-white" />
-      </motion.button>
+      {/* Navigation Controls */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-4">
+        {/* Progress Indicators */}
+        <div className="flex space-x-2">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className="group"
+            >
+              <div className={`h-2 rounded-full transition-all ${
+                currentSlide === index 
+                  ? 'bg-white w-8' 
+                  : 'bg-white/50 w-2 group-hover:w-4'
+              }`} />
+            </button>
+          ))}
+        </div>
 
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-all"
-      >
-        <ChevronRight className="w-6 h-6 text-white" />
-      </motion.button>
-
-      {/* Slide Indicators */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
-        {slides.map((_, index) => (
-          <motion.button
-            key={index}
-            whileHover={{ scale: 1.2 }}
-            onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all ${
-              currentSlide === index ? 'bg-white w-8' : 'bg-white/50'
-            }`}
-          />
-        ))}
+        {/* Play/Pause */}
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => setIsPlaying(!isPlaying)}
+          className="rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30"
+        >
+          {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+        </Button>
       </div>
+
+      {/* Arrow Controls */}
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={prevSlide}
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30"
+      >
+        <ChevronLeft className="w-6 h-6" />
+      </Button>
+
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={nextSlide}
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30"
+      >
+        <ChevronRight className="w-6 h-6" />
+      </Button>
     </div>
   );
 };
